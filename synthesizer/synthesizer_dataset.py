@@ -3,6 +3,7 @@ from torch.utils.data import Dataset
 import numpy as np
 from pathlib import Path
 from synthesizer.utils.text import text_to_sequence
+from synthesizer.hparams import hparams as hp
 
 
 class SynthesizerDataset(Dataset):
@@ -46,6 +47,10 @@ class SynthesizerDataset(Dataset):
     def __len__(self):
         return len(self.samples_fpaths)
 
+def mp_collate_synthesizer(batch):
+    r = 2
+    hparams = hp.parse("")
+    return collate_synthesizer(batch, r, hparams)
 
 def collate_synthesizer(batch, r, hparams):
     # Text

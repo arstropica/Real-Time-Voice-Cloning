@@ -4,7 +4,7 @@ from torch import optim
 from torch.utils.data import DataLoader
 from synthesizer import audio
 from synthesizer.models.tacotron import Tacotron
-from synthesizer.synthesizer_dataset import SynthesizerDataset, collate_synthesizer
+from synthesizer.synthesizer_dataset import SynthesizerDataset, collate_synthesizer, mp_collate_synthesizer
 from synthesizer.utils import ValueWindow, data_parallel_workaround
 from synthesizer.utils.plot import plot_spectrogram
 from synthesizer.utils.symbols import symbols
@@ -15,7 +15,8 @@ import numpy as np
 from pathlib import Path
 import sys
 import time
-
+import os
+import multiprocessing_on_dill as multiprocessing
 
 def np_now(x: torch.Tensor): return x.detach().cpu().numpy()
 
@@ -144,7 +145,7 @@ def train(run_id: str, syn_dir: str, models_dir: str, save_every: int,
             p["lr"] = lr
 
         data_loader = DataLoader(dataset,
-                                 collate_fn=lambda batch: collate_synthesizer(batch, r, hparams),
+                                 collate_fn=mp_collate_synthesizer,
                                  batch_size=batch_size,
                                  num_workers=2,
                                  shuffle=True,
