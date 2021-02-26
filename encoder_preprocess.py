@@ -1,4 +1,4 @@
-from encoder.preprocess import preprocess_librispeech, preprocess_voxceleb1, preprocess_voxceleb2
+from encoder.preprocess import preprocess_librispeech, preprocess_voxceleb1, preprocess_voxceleb2, preprocess_libritts
 from utils.argutils import print_args
 from pathlib import Path
 import argparse
@@ -16,6 +16,8 @@ if __name__ == "__main__":
                     "-[datasets_root]\n"
                     "  -LibriSpeech\n"
                     "    -train-other-500\n"
+                    "  -LibriTTS\n"
+                    "    -train-clean-100\n"
                     "  -VoxCeleb1\n"
                     "    -wav\n"
                     "    -vox1_meta.csv\n"
@@ -29,7 +31,7 @@ if __name__ == "__main__":
         "Path to the output directory that will contain the mel spectrograms. If left out, "
         "defaults to <datasets_root>/SV2TTS/encoder/")
     parser.add_argument("-d", "--datasets", type=str, 
-                        default="librispeech_other,voxceleb1,voxceleb2", help=\
+                        default="librispeech_other,libritts_clean,voxceleb1,voxceleb2", help=\
         "Comma-separated list of the name of the datasets you want to preprocess. Only the train "
         "set of these datasets will be used. Possible names: librispeech_other, voxceleb1, "
         "voxceleb2.")
@@ -61,6 +63,7 @@ if __name__ == "__main__":
     print_args(args, parser)
     preprocess_func = {
         "librispeech_other": preprocess_librispeech,
+        "libritts_clean": preprocess_libritts,
         "voxceleb1": preprocess_voxceleb1,
         "voxceleb2": preprocess_voxceleb2,
     }
