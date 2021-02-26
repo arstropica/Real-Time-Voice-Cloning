@@ -52,6 +52,11 @@ def mp_collate_synthesizer(batch):
     hparams = hp.parse("")
     return collate_synthesizer(batch, r, hparams)
 
+def mp2_collate_synthesizer(batch):
+    r = 2
+    hparams = hp.parse("")
+    return collate_synthesizer(batch, r, hparams)
+
 def collate_synthesizer(batch, r, hparams):
     # Text
     x_lens = [len(x[0]) for x in batch]

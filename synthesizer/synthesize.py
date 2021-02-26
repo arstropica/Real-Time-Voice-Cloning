@@ -1,13 +1,14 @@
 import torch
 from torch.utils.data import DataLoader
 from synthesizer.hparams import hparams_debug_string
-from synthesizer.synthesizer_dataset import SynthesizerDataset, collate_synthesizer
+from synthesizer.synthesizer_dataset import SynthesizerDataset, collate_synthesizer, mp2_collate_synthesizer
 from synthesizer.models.tacotron import Tacotron
 from synthesizer.utils.text import text_to_sequence
 from synthesizer.utils.symbols import symbols
 import numpy as np
 from pathlib import Path
 from tqdm import tqdm
+import traceback
 
 
 def run_synthesis(in_dir, out_dir, model_dir, hparams):
@@ -62,7 +63,7 @@ def run_synthesis(in_dir, out_dir, model_dir, hparams):
 
     dataset = SynthesizerDataset(metadata_fpath, mel_dir, embed_dir, hparams)
     data_loader = DataLoader(dataset,
-                             collate_fn=lambda batch: collate_synthesizer(batch, r),
+                             collate_fn=mp2_collate_synthesizer,
                              batch_size=hparams.synthesis_batch_size,
                              num_workers=2,
                              shuffle=False,
@@ -76,11 +77,17 @@ def run_synthesis(in_dir, out_dir, model_dir, hparams):
             mels = mels.to(device)
             embeds = embeds.to(device)
 
+            print("\nTorch Cuda Device Count: " + str(torch.cuda.device_count()))
             # Parallelize model onto GPUS using workaround due to python bug
-            if device.type == "cuda" and torch.cuda.device_count() > 1:
-                _, mels_out, _ = data_parallel_workaround(model, texts, mels, embeds)
-            else:
-                _, mels_out, _ = model(texts, mels, embeds)
+            try:
+                if device.type == "cuda" and torch.cuda.device_count() > 1:
+                    mels_out, _, _, _ = data_parallel_workaround(model, texts, mels, embeds)
+                else:
+                    mels_out, _, _, _ = model(texts, mels, embeds)
+            except ValueError as e:
+                err = traceback.format_exc()
+                print(err)
+                quit()
 
             for j, k in enumerate(idx):
                 # Note: outputs mel-spectrogram files and target ones have same names, just different folders
