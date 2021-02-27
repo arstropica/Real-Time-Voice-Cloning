@@ -22,3 +22,8 @@ datasets_root/*
 
 .vscode/settings.json
 unaligned.txt
+taco_pretrained/checkpoint
+taco_pretrained/tacotron_model.ckpt-280600.data-00000-of-00001
+taco_pretrained/tacotron_model.ckpt-280600.index
+taco_pretrained/tacotron_model.ckpt-280600.meta
+env.txt
