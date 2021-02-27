@@ -3,6 +3,9 @@ import speech_recognition as sr
 import os
 from pathlib import Path
 import ntpath
+import argparse
+from utils.argutils import print_args
+from pathlib import Path
 
 #from pydub.silence import split_on_silence
 #import io
@@ -29,20 +32,30 @@ def process(filepath, chunksize=60000):
         with sr.AudioFile(os.path.join(directory, 'test.wav')) as source:
             audio = r.record(source)
         #s = r.recognize_google(audio, language="en-US") #, key=API_KEY) --- my key results in broken pipe
-        s = r.recognize_google(audio, language="en-US")
+        try:
+            s = r.recognize_google(audio, language="en-US")
+        except:
+            continue
         print(s)
         string_index[index] = s
         break
     return string_index
 
-directory = 'D:/dev/repos/Real-Time-Voice-Cloning/samples/Audio02'
-for filename in os.listdir(directory):
-    if filename.endswith(".mp3"): 
-        filepath = os.path.join(directory, filename)
-        #print(os.path.join(directory, filename))
-        text = process(filepath)
-        text_file = open(os.path.join(directory, ntpath.basename(filepath) + ".txt"), "w")
-        text_file.write("\n".join(['%s' % (value) for (key, value) in text.items()]))
-        text_file.close()
-    else:
-        continue
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("input_dir", type=str, default=argparse.SUPPRESS, help= \
+        "Path to the mp3 directory.")
+    args = parser.parse_args()
+    print_args(args, parser)
+
+    directory = Path(args.input_dir).resolve()
+    for filename in os.listdir(directory):
+        if filename.endswith(".mp3"): 
+            filepath = os.path.join(directory, filename)
+            #print(os.path.join(directory, filename))
+            text = process(filepath)
+            text_file = open(os.path.join(directory, ntpath.basename(filepath) + ".txt"), "w")
+            text_file.write("\n".join(['%s' % (value) for (key, value) in text.items()]))
+            text_file.close()
+        else:
+            continue
