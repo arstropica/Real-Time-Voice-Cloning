@@ -422,6 +422,7 @@ class WaveRNN(nn.Module):
             self.load_state_dict(checkpoint)
 
     def save(self, path, optimizer) :
+        print('Saving model to disk ...')
         torch.save({
             "model_state": self.state_dict(),
             "optimizer_state": optimizer.state_dict(),

@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import DataLoader
 from synthesizer.hparams import hparams_debug_string
-from synthesizer.synthesizer_dataset import SynthesizerDataset, collate_synthesizer, mp2_collate_synthesizer
+from synthesizer.synthesizer_dataset import SynthesizerDataset, collate_synthesizer
 from synthesizer.models.tacotron import Tacotron
 from synthesizer.utils.text import text_to_sequence
 from synthesizer.utils.symbols import symbols
@@ -9,6 +9,7 @@ import numpy as np
 from pathlib import Path
 from tqdm import tqdm
 import traceback
+from fast_dataloader.dataloader import FastDataLoader
 
 
 def run_synthesis(in_dir, out_dir, model_dir, hparams):
@@ -62,10 +63,10 @@ def run_synthesis(in_dir, out_dir, model_dir, hparams):
     embed_dir = in_dir.joinpath("embeds")
 
     dataset = SynthesizerDataset(metadata_fpath, mel_dir, embed_dir, hparams)
-    data_loader = DataLoader(dataset,
-                             collate_fn=mp2_collate_synthesizer,
+    data_loader = FastDataLoader(dataset,
+                             collate_fn=lambda batch: collate_synthesizer(batch, r, hparams),
                              batch_size=hparams.synthesis_batch_size,
-                             num_workers=2,
+                             #num_workers=2,
                              shuffle=False,
                              pin_memory=True)
 

@@ -4,7 +4,7 @@ from torch import optim
 from torch.utils.data import DataLoader
 from synthesizer import audio
 from synthesizer.models.tacotron import Tacotron
-from synthesizer.synthesizer_dataset import SynthesizerDataset, collate_synthesizer, mp_collate_synthesizer
+from synthesizer.synthesizer_dataset import SynthesizerDataset, collate_synthesizer
 from synthesizer.utils import ValueWindow, data_parallel_workaround
 from synthesizer.utils.plot import plot_spectrogram
 from synthesizer.utils.symbols import symbols
@@ -16,7 +16,7 @@ from pathlib import Path
 import sys
 import time
 import os
-import multiprocessing_on_dill as multiprocessing
+from fast_dataloader.dataloader import FastDataLoader
 
 def np_now(x: torch.Tensor): return x.detach().cpu().numpy()
 
@@ -110,7 +110,7 @@ def train(run_id: str, syn_dir: str, models_dir: str, save_every: int,
     mel_dir = syn_dir.joinpath("mels")
     embed_dir = syn_dir.joinpath("embeds")
     dataset = SynthesizerDataset(metadata_fpath, mel_dir, embed_dir, hparams)
-    test_loader = DataLoader(dataset,
+    test_loader = FastDataLoader(dataset,
                              batch_size=1,
                              shuffle=True,
                              pin_memory=True)
@@ -144,10 +144,10 @@ def train(run_id: str, syn_dir: str, models_dir: str, save_every: int,
         for p in optimizer.param_groups:
             p["lr"] = lr
 
-        data_loader = DataLoader(dataset,
-                                 collate_fn=mp_collate_synthesizer,
+        data_loader = FastDataLoader(dataset,
+                                 collate_fn=lambda batch: collate_synthesizer(batch, r, hparams),
                                  batch_size=batch_size,
-                                 num_workers=2,
+                                 #num_workers=2,
                                  shuffle=True,
                                  pin_memory=True)
 

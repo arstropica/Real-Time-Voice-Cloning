@@ -4,6 +4,7 @@ from encoder.data_objects.speaker import Speaker
 from encoder.params_data import partials_n_frames
 from torch.utils.data import Dataset, DataLoader
 from pathlib import Path
+from fast_dataloader.dataloader import FastDataLoader
 
 # TODO: improve with a pool of speakers for data efficiency
 
@@ -31,7 +32,7 @@ class SpeakerVerificationDataset(Dataset):
         return log_string
     
     
-class SpeakerVerificationDataLoader(DataLoader):
+class SpeakerVerificationDataLoader(FastDataLoader):
     def __init__(self, dataset, speakers_per_batch, utterances_per_speaker, sampler=None, 
                  batch_sampler=None, num_workers=0, pin_memory=False, timeout=0, 
                  worker_init_fn=None):

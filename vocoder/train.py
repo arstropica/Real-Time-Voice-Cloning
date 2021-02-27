@@ -11,6 +11,7 @@ import vocoder.hparams as hp
 import numpy as np
 import time
 import torch
+from fast_dataloader.dataloader import FastDataLoader
 
 
 def train(run_id: str, syn_dir: Path, voc_dir: Path, models_dir: Path, ground_truth: bool,
@@ -65,7 +66,7 @@ def train(run_id: str, syn_dir: Path, voc_dir: Path, models_dir: Path, ground_tr
     mel_dir = syn_dir.joinpath("mels") if ground_truth else voc_dir.joinpath("mels_gta")
     wav_dir = syn_dir.joinpath("audio")
     dataset = VocoderDataset(metadata_fpath, mel_dir, wav_dir)
-    test_loader = DataLoader(dataset,
+    test_loader = FastDataLoader(dataset,
                              batch_size=1,
                              shuffle=True,
                              pin_memory=True)
@@ -76,10 +77,10 @@ def train(run_id: str, syn_dir: Path, voc_dir: Path, models_dir: Path, ground_tr
                   ('Sequence Len', hp.voc_seq_len)])
     
     for epoch in range(1, 350):
-        data_loader = DataLoader(dataset,
+        data_loader = FastDataLoader(dataset,
                                  collate_fn=collate_vocoder,
                                  batch_size=hp.voc_batch_size,
-                                 num_workers=2,
+                                 #num_workers=2,
                                  shuffle=True,
                                  pin_memory=True)
         start = time.time()
